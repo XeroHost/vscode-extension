@@ -1,0 +1,10 @@
+src/**
+node_modules/**
+esbuild.mjs
+scripts/**
+test/**
+tsconfig.json
+**/*.map
+.gitignore
+.test-scratch/**
+package-lock.json
