@@ -2,13 +2,17 @@
   "name": "xerohost",
   "displayName": "%displayName%",
   "description": "%description%",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "xerohost",
   "license": "MIT",
   "icon": "icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/XeroHost"
+    "url": "https://github.com/XeroHost/vscode-extension.git"
+  },
+  "homepage": "https://github.com/XeroHost/vscode-extension#readme",
+  "bugs": {
+    "url": "https://github.com/XeroHost/vscode-extension/issues"
   },
   "engines": {
     "vscode": "^1.90.0"

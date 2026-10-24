@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.1
+- Source published at https://github.com/XeroHost/vscode-extension; repository, homepage and issue links point there.
+
 ## 0.2.0
 
 ### Added
