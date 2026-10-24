@@ -1,9 +1,57 @@
 import * as vscode from 'vscode';
+import pageStrings from './pageStrings.json';
+
+export type PageKey = keyof (typeof pageStrings)['en'];
 
 export interface CallbackPageOptions {
-  heading: string;
-  message: string;
+  heading: PageKey;
+  message: PageKey;
   tone: 'success' | 'error';
+  /** One of the supported language ids (see `pickLanguage`). */
+  language: string;
+}
+
+const PAGE_LANGUAGES = Object.keys(pageStrings);
+const HTML_LANG: Record<string, string> = { 'pt-br': 'pt-BR', 'zh-cn': 'zh-CN' };
+
+/** Maps one language tag ("pt-BR", "zh-Hans-CN", "es-419", "ES") to a supported language id, or null. */
+function matchLanguage(tag: string): string | null {
+  const lower = tag.trim().toLowerCase().replaceAll('_', '-');
+  if (lower === '' || lower === '*') {
+    return null;
+  }
+  if (lower === 'zh' || lower.startsWith('zh-')) {
+    return lower.includes('tw') || lower.includes('hk') || lower.includes('hant') ? null : 'zh-cn';
+  }
+  const primary = lower.split('-')[0];
+  if (primary === 'pt') {
+    return 'pt-br';
+  }
+  return PAGE_LANGUAGES.includes(primary) ? primary : null;
+}
+
+/**
+ * Picks the page language from an Accept-Language header (highest q first), falling back to the
+ * language VS Code is displayed in, and finally to English.
+ */
+export function pickLanguage(acceptLanguage: string | undefined, fallback: string = vscode.env.language): string {
+  const ranked = (acceptLanguage ?? '')
+    .split(',')
+    .map((part, index) => {
+      const [tag, ...params] = part.split(';');
+      const q = params.map((p) => /^\s*q\s*=\s*([0-9.]+)/.exec(p)?.[1]).find(Boolean);
+      return { tag, q: q === undefined ? 1 : Number(q), index };
+    })
+    .filter((entry) => entry.q > 0)
+    .sort((a, b) => b.q - a.q || a.index - b.index);
+
+  for (const { tag } of ranked) {
+    const match = matchLanguage(tag);
+    if (match) {
+      return match;
+    }
+  }
+  return matchLanguage(fallback) ?? 'en';
 }
 
 const LOGO = `<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" viewBox="0 0 461 458" fill="#ff0000"><polygon points="38,15 194,112 194,230 38,133"/><polygon points="38,326 194,230 194,347 38,442"/><polygon points="422,15 266,112 266,230 422,133"/><polygon points="422,326 266,230 266,347 422,442"/></svg>`;
@@ -30,15 +78,10 @@ function escapeHtml(value: string): string {
   return value.replace(/[&<>"]/g, (character) => HTML_ESCAPES[character]);
 }
 
-function hint(): string {
-  return vscode.env.language.startsWith('es')
-    ? 'Puedes cerrar esta pestaña y volver a tu editor.'
-    : 'You can close this tab and return to your editor.';
-}
-
 export function callbackPage(options: CallbackPageOptions): string {
-  const heading = escapeHtml(options.heading);
-  const message = escapeHtml(options.message);
+  const strings = (pageStrings as Record<string, Record<PageKey, string>>)[options.language] ?? pageStrings.en;
+  const heading = escapeHtml(strings[options.heading]);
+  const message = escapeHtml(strings[options.message]);
   const body =
     options.tone === 'error'
       ? `<div class="alert" role="alert">${message}</div>`
@@ -46,7 +89,7 @@ export function callbackPage(options: CallbackPageOptions): string {
 
   // The key travels in the query string of this very page: drop it from the address bar and history.
   return `<!doctype html>
-<html lang="${vscode.env.language.startsWith('es') ? 'es' : 'en'}">
+<html lang="${HTML_LANG[options.language] ?? options.language}">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -60,7 +103,7 @@ export function callbackPage(options: CallbackPageOptions): string {
       <header>${LOGO}<span>XeroHost</span></header>
       <h1>${heading}</h1>
       ${body}
-      <p class="hint">${hint()}</p>
+      <p class="hint">${escapeHtml(strings.hint)}</p>
     </main>
     <script>history.replaceState({}, '', '/');</script>
   </body>

@@ -1,18 +1,12 @@
 import * as vscode from 'vscode';
 import type { PowerState } from '../api/types.ts';
+import { stateLabel } from '../format.ts';
 import { log } from '../log.ts';
 import type { MountedServer } from '../servers.ts';
 import type { WingsSocketHub, WingsSocketLease } from '../wings/socketHub.ts';
 
 const DAEMON_PROMPT = 'container@pterodactyl~';
 const RED_BOLD = '\x1b[1m\x1b[41m';
-
-const STATE_LABELS: Record<string, string> = {
-  offline: 'Offline',
-  running: 'Running',
-  starting: 'Starting',
-  stopping: 'Stopping',
-};
 
 function configuredPrompt(): string {
   return vscode.workspace.getConfiguration('xerohost').get<string>('console.prompt', 'container@xerohost~');
@@ -33,7 +27,7 @@ export class ConsolePseudoterminal implements vscode.Pseudoterminal {
   ) {}
 
   open(): void {
-    this.addLine(`Connecting to ${this.target.name}...`, true);
+    this.addLine(vscode.l10n.t('Connecting to {0}...', this.target.name), true);
 
     const socket = this.hub.acquire(this.target.origin, this.target.uuid);
     this.socket = socket;
@@ -48,18 +42,18 @@ export class ConsolePseudoterminal implements vscode.Pseudoterminal {
     socket.on('transfer logs', (line: string) => this.addLine(line));
 
     socket.on('status', (status: PowerState) => {
-      this.addLine(`Server marked as ${STATE_LABELS[status] ?? status}...`, true);
+      this.addLine(vscode.l10n.t('Server marked as {0}...', stateLabel(status)), true);
     });
 
-    socket.on('install started', () => this.addLine('Installation has started.', true));
-    socket.on('install completed', () => this.addLine('Installation has completed.', true));
+    socket.on('install started', () => this.addLine(vscode.l10n.t('Installation has started.'), true));
+    socket.on('install completed', () => this.addLine(vscode.l10n.t('Installation has completed.'), true));
 
     socket.on('daemon message', (message: string) => this.addLine(message, true));
     socket.on('daemon error', (message: string) => this.addLine(`${RED_BOLD}${message}\x1b[0m`, true));
 
     socket.on('CONNECTION_STATE', (state: string) => {
       if (state === 'reconnecting') {
-        this.addLine('Connection lost, reconnecting...', true);
+        this.addLine(vscode.l10n.t('Connection lost, reconnecting...'), true);
       }
     });
     socket.on('CONNECTION_ERROR', (err: Error) => {
@@ -176,7 +170,7 @@ export function openConsoleTerminal(hub: WingsSocketHub, server: MountedServer):
   }
 
   const terminal = vscode.window.createTerminal({
-    name: `Console: ${server.name}`,
+    name: vscode.l10n.t('Console: {0}', server.name),
     pty: new ConsolePseudoterminal(hub, server),
     iconPath: new vscode.ThemeIcon('server-environment'),
   });

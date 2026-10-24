@@ -1,4 +1,5 @@
 import { EventEmitter } from 'node:events';
+import * as vscode from 'vscode';
 import WebSocket from 'ws';
 import type { WebsocketCredentials } from '../api/types.ts';
 import { log } from '../log.ts';
@@ -6,7 +7,7 @@ import type { Session } from '../session.ts';
 
 class NotSignedInError extends Error {
   constructor(origin: string) {
-    super(`Not signed in to ${origin}.`);
+    super(vscode.l10n.t('Not signed in to {0}.', origin));
   }
 }
 
@@ -132,7 +133,7 @@ export class ConsoleSocket extends EventEmitter {
           break;
         case 'jwt error':
           if (!(args?.[0] ?? '').toLowerCase().includes('token')) {
-            this.emit('CONNECTION_ERROR', new Error(`Error from daemon: ${args?.[0]}`));
+            this.emit('CONNECTION_ERROR', new Error(vscode.l10n.t('Error from daemon: {0}', String(args?.[0]))));
             break;
           }
 
@@ -156,7 +157,7 @@ export class ConsoleSocket extends EventEmitter {
 
       this.emit('CONNECTION_STATE', 'disconnected');
       if (reason.toString() === 'permission revoked') {
-        this.emit('CONNECTION_ERROR', new Error('Websocket permission revoked.'));
+        this.emit('CONNECTION_ERROR', new Error(vscode.l10n.t('Websocket permission revoked.')));
         this.closed = true;
         return;
       }
@@ -182,7 +183,7 @@ export class ConsoleSocket extends EventEmitter {
 
     this.tokenRefreshAttempts++;
     if (this.tokenRefreshAttempts > this.maxTokenRefreshAttempts) {
-      this.emit('CONNECTION_ERROR', new Error('Unable to reauthenticate with the daemon, reconnecting.'));
+      this.emit('CONNECTION_ERROR', new Error(vscode.l10n.t('Unable to reauthenticate with the daemon, reconnecting.')));
       this.socket?.close(1000, 'token refresh failed');
       return;
     }

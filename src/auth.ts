@@ -2,7 +2,7 @@ import * as crypto from 'node:crypto';
 import * as http from 'node:http';
 import type { AddressInfo } from 'node:net';
 import * as vscode from 'vscode';
-import { callbackPage } from './authPage.ts';
+import { callbackPage, pickLanguage } from './authPage.ts';
 import { log } from './log.ts';
 
 const AUTHORIZE_PATH = '/account/vscode/authorize';
@@ -57,7 +57,7 @@ async function awaitKey(origin: string, fromCallback: Promise<CallbackResult>): 
   const manual = vscode.window.withProgress<string | undefined>(
     {
       location: vscode.ProgressLocation.Notification,
-      title: `XeroHost: waiting for authorization from ${origin}...`,
+      title: vscode.l10n.t('XeroHost: waiting for authorization from {0}...', origin),
       cancellable: true,
     },
     (_progress, progressToken) => {
@@ -65,8 +65,8 @@ async function awaitKey(origin: string, fromCallback: Promise<CallbackResult>): 
       return Promise.resolve(
         vscode.window.showInputBox(
           {
-            title: 'XeroHost: finish signing in',
-            prompt: 'Approve in your browser to finish automatically, or paste an API key here.',
+            title: vscode.l10n.t('XeroHost: finish signing in'),
+            prompt: vscode.l10n.t('Approve in your browser to finish automatically, or paste an API key here.'),
             password: true,
             ignoreFocusOut: true,
           },
@@ -82,8 +82,8 @@ async function awaitKey(origin: string, fromCallback: Promise<CallbackResult>): 
   if (outcome && 'error' in outcome) {
     vscode.window.showWarningMessage(
       outcome.error === 'access_denied'
-        ? 'XeroHost: the authorization was cancelled in the panel.'
-        : `XeroHost: the panel refused the sign-in (${outcome.error}).`,
+        ? vscode.l10n.t('XeroHost: the authorization was cancelled in the panel.')
+        : vscode.l10n.t('XeroHost: the panel refused the sign-in ({0}).', outcome.error),
     );
     return null;
   }
@@ -107,13 +107,19 @@ function startCallbackServer(): Promise<{
     const state = randomState();
     let settled = false;
 
-    const respond = (res: http.ServerResponse, status: number, page: string) => {
+    const respond = (
+      req: http.IncomingMessage,
+      res: http.ServerResponse,
+      status: number,
+      page: Omit<Parameters<typeof callbackPage>[0], 'language'>,
+    ) => {
+      const body = callbackPage({ ...page, language: pickLanguage(req.headers['accept-language']) });
       res.writeHead(status, {
         'Content-Type': 'text/html; charset=utf-8',
         'Cache-Control': 'no-store',
         'Referrer-Policy': 'no-referrer',
       });
-      res.end(page);
+      res.end(body);
     };
 
     const server = http.createServer((req, res) => {
@@ -123,15 +129,7 @@ function startCallbackServer(): Promise<{
         return;
       }
       if (!statesMatch(state, requested.searchParams.get('state'))) {
-        respond(
-          res,
-          400,
-          callbackPage({
-            tone: 'error',
-            heading: 'Invalid request',
-            message: 'The sign-in state did not match. Return to your editor and try again.',
-          }),
-        );
+        respond(req, res, 400, { tone: 'error', heading: 'invalidHeading', message: 'invalidMessage' });
         return;
       }
 
@@ -140,29 +138,13 @@ function startCallbackServer(): Promise<{
 
       if (key) {
         settled = true;
-        respond(
-          res,
-          200,
-          callbackPage({
-            tone: 'success',
-            heading: 'Signed in',
-            message: 'Your key was handed back to your editor.',
-          }),
-        );
+        respond(req, res, 200, { tone: 'success', heading: 'signedInHeading', message: 'signedInMessage' });
         deliver({ key });
         return;
       }
 
       settled = true;
-      respond(
-        res,
-        200,
-        callbackPage({
-          tone: 'error',
-          heading: 'Authorization cancelled',
-          message: 'No key was handed to your editor.',
-        }),
-      );
+      respond(req, res, 200, { tone: 'error', heading: 'cancelledHeading', message: 'cancelledMessage' });
       deliver({ error: error ?? 'no_key' });
     });
 

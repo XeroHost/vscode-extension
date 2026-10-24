@@ -78,6 +78,16 @@ export class CancellationTokenSource {
 /** Lets a test play the user: `shim.nextInput` is what the next input box returns (or it waits for cancellation). */
 export const shim = (globalThis.__xerohostShim ??= { opened: [], nextInput: undefined });
 
+/** vscode.l10n.t: looks the English text up in `shim.bundle` (an l10n bundle) and fills {0}, {1}... */
+export const l10n = {
+  t(message, ...args) {
+    const source = typeof message === 'object' ? message.message : message;
+    const values = typeof message === 'object' ? (message.args ?? []) : args;
+    const text = shim.bundle?.[source] ?? source;
+    return text.replace(/\{(\d+)\}/g, (_, i) => String(values[Number(i)]));
+  },
+};
+
 export const env = {
   language: 'en',
   asExternalUri: async (uri) => uri,
@@ -88,6 +98,10 @@ export const env = {
 };
 
 export const window = {
+  get state() {
+    return { focused: shim.focused !== false };
+  },
+  onDidChangeWindowState: () => ({ dispose() {} }),
   createOutputChannel: () => channel,
   withProgress: (_options, task) => task({ report() {} }, { onCancellationRequested() {} }),
   showInputBox: (_options, token) =>
@@ -103,6 +117,10 @@ export const window = {
   showInformationMessage: async () => undefined,
 };
 
+/** `shim.config['xerohost.files.pollIntervalSeconds'] = 3` overrides a setting for the test. */
+shim.config ??= {};
+
 export const workspace = {
-  getConfiguration: () => ({ get: (_key, fallback) => fallback }),
+  getConfiguration: (section) => ({ get: (key, fallback) => shim.config[`${section}.${key}`] ?? fallback }),
+  onDidChangeConfiguration: () => ({ dispose() {} }),
 };

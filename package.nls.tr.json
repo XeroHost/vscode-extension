@@ -1,0 +1,16 @@
+{
+  "displayName": "XeroHost",
+  "description": "XeroHost oyun sunucunuzun dosyalarını düzenleyin; konsolu ve güç kontrollerini VS Code içinden kullanın.",
+  "command.signIn": "Oturum aç",
+  "command.signOut": "Oturumu kapat",
+  "command.openServer": "Sunucu dosyalarını aç",
+  "command.openConsole": "Sunucu konsolunu aç",
+  "command.powerAction": "Sunucu güç eylemi",
+  "command.compress": "Sıkıştır",
+  "command.decompress": "Buraya çıkar",
+  "command.refresh": "Yenile",
+  "config.console.prompt": "Konsol mesajlarının önünde gösterilen ve panelin varsayılan istemini değiştiren istem.",
+  "config.files.downloadThresholdMiB": "Bundan büyük dosyalar, panelin dosya içeriği uç noktası yerine imzalı bir indirme bağlantısıyla açılır.",
+  "config.files.pollIntervalSeconds": "VS Code'un izlediği klasörlerde, VS Code dışında yapılan değişikliklerin (panelde, başka kişilerce veya sunucunun kendisince) kaç saniyede bir denetleneceği. `0` kapatır; 1 ile 2 arasındaki değerler 3 sayılır. Pencere odakta değilken duraklatılır. Anında denetlemek için **XeroHost: Yenile** komutunu kullanın.",
+  "terminal.profile.title": "XeroHost konsolu"
+}

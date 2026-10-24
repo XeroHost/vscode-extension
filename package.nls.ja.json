@@ -1,0 +1,16 @@
+{
+  "displayName": "XeroHost",
+  "description": "XeroHost ゲームサーバーのファイルを編集し、コンソールと電源操作を VS Code から利用できます。",
+  "command.signIn": "サインイン",
+  "command.signOut": "サインアウト",
+  "command.openServer": "サーバーのファイルを開く",
+  "command.openConsole": "サーバーのコンソールを開く",
+  "command.powerAction": "サーバーの電源操作",
+  "command.compress": "圧縮",
+  "command.decompress": "ここに展開",
+  "command.refresh": "更新",
+  "config.console.prompt": "コンソールメッセージの前に表示されるプロンプトです。パネルの既定のプロンプトを置き換えます。",
+  "config.files.downloadThresholdMiB": "このサイズより大きいファイルは、パネルのファイル内容エンドポイントではなく署名付きダウンロードリンクで開きます。",
+  "config.files.pollIntervalSeconds": "VS Code が監視しているフォルダーで、VS Code の外で行われた変更 (パネル上、他のユーザー、またはサーバー自身による変更) を確認する間隔 (秒) です。`0` で無効になり、1 から 2 の値は 3 として扱われます。ウィンドウがフォーカスされていない間は一時停止します。すぐに確認するには **XeroHost: 更新** を使用してください。",
+  "terminal.profile.title": "XeroHost コンソール"
+}

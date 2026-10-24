@@ -25,8 +25,8 @@ export async function pickServer(session: Session): Promise<{ origin: string; se
   const picked = await vscode.window.showQuickPick(
     loadServers(client.origin, () => client.listServers()),
     {
-      title: `XeroHost: select a server (${client.origin})`,
-      placeHolder: 'Search servers by name...',
+      title: vscode.l10n.t('XeroHost: select a server ({0})', client.origin),
+      placeHolder: vscode.l10n.t('Search servers by name...'),
       matchOnDescription: true,
       matchOnDetail: true,
     },
@@ -40,9 +40,9 @@ export async function pickServer(session: Session): Promise<{ origin: string; se
 
   // Accounts with access that is not listed (for example staff) can still open a server by its id.
   const id = await vscode.window.showInputBox({
-    title: 'XeroHost: server ID',
-    prompt: 'The server identifier shown in the panel (8 characters) or its UUID',
-    validateInput: (value) => (isServerId(value.trim()) ? null : 'Not a valid server ID'),
+    title: vscode.l10n.t('XeroHost: server ID'),
+    prompt: vscode.l10n.t('The server identifier shown in the panel (8 characters) or its UUID'),
+    validateInput: (value) => (isServerId(value.trim()) ? null : vscode.l10n.t('Not a valid server ID')),
   });
   if (!id) {
     return null;
@@ -50,7 +50,7 @@ export async function pickServer(session: Session): Promise<{ origin: string; se
   try {
     return { origin: client.origin, server: await client.getServer(id.trim()) };
   } catch (err) {
-    vscode.window.showErrorMessage(`XeroHost: could not open server ${id.trim()} (${err}).`);
+    vscode.window.showErrorMessage(vscode.l10n.t('XeroHost: could not open server {0} ({1}).', id.trim(), String(err)));
     return null;
   }
 }
@@ -60,7 +60,7 @@ interface ServerPick extends vscode.QuickPickItem {
 }
 
 async function loadServers(origin: string, list: () => Promise<Server[]>): Promise<ServerPick[]> {
-  const manual: ServerPick = { label: '$(edit) Enter a server ID...', alwaysShow: true };
+  const manual: ServerPick = { label: vscode.l10n.t('$(edit) Enter a server ID...'), alwaysShow: true };
   try {
     const servers = await list();
     return [
@@ -74,7 +74,7 @@ async function loadServers(origin: string, list: () => Promise<Server[]>): Promi
     ];
   } catch (err) {
     log.warn(`failed to list servers for ${origin}: ${err}`);
-    vscode.window.showErrorMessage(`XeroHost: could not list your servers (${err}).`);
+    vscode.window.showErrorMessage(vscode.l10n.t('XeroHost: could not list your servers ({0}).', String(err)));
     return [manual];
   }
 }
@@ -88,8 +88,8 @@ async function pickPanel(session: Session): Promise<string | undefined> {
     return origins[0];
   }
 
-  const ADD = '$(add) Sign in to another panel...';
-  const picked = await vscode.window.showQuickPick([...origins, ADD], { title: 'XeroHost: select a panel' });
+  const ADD = vscode.l10n.t('$(add) Sign in to another panel...');
+  const picked = await vscode.window.showQuickPick([...origins, ADD], { title: vscode.l10n.t('XeroHost: select a panel') });
   if (!picked) {
     return undefined;
   }
@@ -119,7 +119,7 @@ export async function pickMountedServer(session: Session): Promise<MountedServer
 
   const picked = await vscode.window.showQuickPick(
     mounted.map((server) => ({ label: server.name, description: server.uuid, detail: server.origin, server })),
-    { title: 'XeroHost: select a mounted server', matchOnDescription: true, matchOnDetail: true },
+    { title: vscode.l10n.t('XeroHost: select a mounted server'), matchOnDescription: true, matchOnDetail: true },
   );
   return picked?.server ?? null;
 }
@@ -152,6 +152,9 @@ export async function openServerFolder(server: MountedServer): Promise<void> {
   }
 
   vscode.window.showErrorMessage(
-    `XeroHost: could not add ${server.name} to the workspace. Check the XeroHost output channel for details.`,
+    vscode.l10n.t(
+      'XeroHost: could not add {0} to the workspace. Check the XeroHost output channel for details.',
+      server.name,
+    ),
   );
 }

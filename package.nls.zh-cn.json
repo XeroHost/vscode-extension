@@ -1,0 +1,16 @@
+{
+  "displayName": "XeroHost",
+  "description": "在 VS Code 中编辑 XeroHost 游戏服务器的文件，并使用其控制台和电源控制。",
+  "command.signIn": "登录",
+  "command.signOut": "退出登录",
+  "command.openServer": "打开服务器文件",
+  "command.openConsole": "打开服务器控制台",
+  "command.powerAction": "服务器电源操作",
+  "command.compress": "压缩",
+  "command.decompress": "在此处解压",
+  "command.refresh": "刷新",
+  "config.console.prompt": "显示在控制台消息之前的提示符，用于替换面板的默认提示符。",
+  "config.files.downloadThresholdMiB": "大于此大小的文件将通过签名下载链接打开，而不是使用面板的文件内容接口。",
+  "config.files.pollIntervalSeconds": "检查 VS Code 之外所做更改（在面板中、由其他人或由服务器本身）的间隔秒数，仅针对 VS Code 正在监视的文件夹。`0` 表示关闭；1 到 2 之间的值按 3 处理。窗口未获得焦点时暂停。使用 **XeroHost: 刷新** 可立即检查。",
+  "terminal.profile.title": "XeroHost 控制台"
+}

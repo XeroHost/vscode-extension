@@ -1,0 +1,92 @@
+{
+  "en": {
+    "invalidHeading": "Invalid request",
+    "invalidMessage": "The sign-in state did not match. Return to your editor and try again.",
+    "signedInHeading": "Signed in",
+    "signedInMessage": "Your key was handed back to your editor.",
+    "cancelledHeading": "Authorization cancelled",
+    "cancelledMessage": "No key was handed to your editor.",
+    "hint": "You can close this tab and return to your editor."
+  },
+  "es": {
+    "invalidHeading": "Solicitud no válida",
+    "invalidMessage": "El estado del inicio de sesión no coincide. Vuelve a tu editor e inténtalo de nuevo.",
+    "signedInHeading": "Sesión iniciada",
+    "signedInMessage": "Tu clave se entregó a tu editor.",
+    "cancelledHeading": "Autorización cancelada",
+    "cancelledMessage": "No se entregó ninguna clave a tu editor.",
+    "hint": "Puedes cerrar esta pestaña y volver a tu editor."
+  },
+  "pt-br": {
+    "invalidHeading": "Solicitação inválida",
+    "invalidMessage": "O estado do login não corresponde. Volte ao editor e tente novamente.",
+    "signedInHeading": "Login concluído",
+    "signedInMessage": "Sua chave foi entregue ao editor.",
+    "cancelledHeading": "Autorização cancelada",
+    "cancelledMessage": "Nenhuma chave foi entregue ao editor.",
+    "hint": "Você pode fechar esta aba e voltar ao editor."
+  },
+  "fr": {
+    "invalidHeading": "Requête invalide",
+    "invalidMessage": "L'état de la connexion ne correspond pas. Revenez à votre éditeur et réessayez.",
+    "signedInHeading": "Connecté",
+    "signedInMessage": "Votre clé a été transmise à votre éditeur.",
+    "cancelledHeading": "Autorisation annulée",
+    "cancelledMessage": "Aucune clé n'a été transmise à votre éditeur.",
+    "hint": "Vous pouvez fermer cet onglet et revenir à votre éditeur."
+  },
+  "de": {
+    "invalidHeading": "Ungültige Anfrage",
+    "invalidMessage": "Der Anmeldestatus stimmt nicht überein. Kehre zu deinem Editor zurück und versuche es erneut.",
+    "signedInHeading": "Angemeldet",
+    "signedInMessage": "Dein Schlüssel wurde an deinen Editor übergeben.",
+    "cancelledHeading": "Autorisierung abgebrochen",
+    "cancelledMessage": "Es wurde kein Schlüssel an deinen Editor übergeben.",
+    "hint": "Du kannst diesen Tab schließen und zu deinem Editor zurückkehren."
+  },
+  "it": {
+    "invalidHeading": "Richiesta non valida",
+    "invalidMessage": "Lo stato dell'accesso non corrisponde. Torna all'editor e riprova.",
+    "signedInHeading": "Accesso effettuato",
+    "signedInMessage": "La tua chiave è stata consegnata all'editor.",
+    "cancelledHeading": "Autorizzazione annullata",
+    "cancelledMessage": "Nessuna chiave è stata consegnata all'editor.",
+    "hint": "Puoi chiudere questa scheda e tornare all'editor."
+  },
+  "tr": {
+    "invalidHeading": "Geçersiz istek",
+    "invalidMessage": "Oturum açma durumu eşleşmedi. Düzenleyicinize dönüp tekrar deneyin.",
+    "signedInHeading": "Oturum açıldı",
+    "signedInMessage": "Anahtarınız düzenleyicinize iletildi.",
+    "cancelledHeading": "Yetkilendirme iptal edildi",
+    "cancelledMessage": "Düzenleyicinize hiçbir anahtar iletilmedi.",
+    "hint": "Bu sekmeyi kapatıp düzenleyicinize dönebilirsiniz."
+  },
+  "zh-cn": {
+    "invalidHeading": "请求无效",
+    "invalidMessage": "登录状态不匹配。请返回编辑器后重试。",
+    "signedInHeading": "已登录",
+    "signedInMessage": "密钥已交给你的编辑器。",
+    "cancelledHeading": "授权已取消",
+    "cancelledMessage": "未向你的编辑器交付任何密钥。",
+    "hint": "你可以关闭此标签页并返回编辑器。"
+  },
+  "ja": {
+    "invalidHeading": "無効なリクエスト",
+    "invalidMessage": "サインインの状態が一致しません。エディターに戻ってもう一度お試しください。",
+    "signedInHeading": "サインインしました",
+    "signedInMessage": "キーをエディターに渡しました。",
+    "cancelledHeading": "承認がキャンセルされました",
+    "cancelledMessage": "エディターにキーは渡されませんでした。",
+    "hint": "このタブを閉じてエディターに戻れます。"
+  },
+  "ko": {
+    "invalidHeading": "잘못된 요청",
+    "invalidMessage": "로그인 상태가 일치하지 않습니다. 편집기로 돌아가 다시 시도하세요.",
+    "signedInHeading": "로그인됨",
+    "signedInMessage": "키가 편집기로 전달되었습니다.",
+    "cancelledHeading": "승인이 취소되었습니다",
+    "cancelledMessage": "편집기로 전달된 키가 없습니다.",
+    "hint": "이 탭을 닫고 편집기로 돌아가도 됩니다."
+  }
+}

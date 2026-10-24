@@ -1,0 +1,16 @@
+{
+  "displayName": "XeroHost",
+  "description": "VS Code에서 XeroHost 게임 서버의 파일을 편집하고 콘솔과 전원 제어를 사용하세요.",
+  "command.signIn": "로그인",
+  "command.signOut": "로그아웃",
+  "command.openServer": "서버 파일 열기",
+  "command.openConsole": "서버 콘솔 열기",
+  "command.powerAction": "서버 전원 작업",
+  "command.compress": "압축",
+  "command.decompress": "여기에 압축 풀기",
+  "command.refresh": "새로 고침",
+  "config.console.prompt": "콘솔 메시지 앞에 표시되며 패널의 기본 프롬프트를 대체하는 프롬프트입니다.",
+  "config.files.downloadThresholdMiB": "이 크기보다 큰 파일은 패널의 파일 내용 엔드포인트 대신 서명된 다운로드 링크로 엽니다.",
+  "config.files.pollIntervalSeconds": "VS Code가 감시하는 폴더에서 VS Code 밖(패널, 다른 사용자 또는 서버 자체)에서 이루어진 변경 사항을 확인하는 간격(초)입니다. `0`이면 꺼지며 1~2 사이의 값은 3으로 처리됩니다. 창이 포커스되지 않으면 일시 중지됩니다. 즉시 확인하려면 **XeroHost: 새로 고침**을 사용하세요.",
+  "terminal.profile.title": "XeroHost 콘솔"
+}

@@ -1,0 +1,16 @@
+{
+  "displayName": "XeroHost",
+  "description": "Edit your XeroHost game server files and use its console and power controls from VS Code.",
+  "command.signIn": "Sign In",
+  "command.signOut": "Sign Out",
+  "command.openServer": "Open Server Files",
+  "command.openConsole": "Open Server Console",
+  "command.powerAction": "Server Power Action",
+  "command.compress": "Compress",
+  "command.decompress": "Extract Archive Here",
+  "command.refresh": "Refresh",
+  "config.console.prompt": "Prompt shown in front of console messages and replacing the panel's default prompt.",
+  "config.files.downloadThresholdMiB": "Files larger than this are opened through a signed download link instead of the panel's file contents endpoint.",
+  "config.files.pollIntervalSeconds": "Every how many seconds to check for changes made outside VS Code (in the panel, by other people or by the server itself) in the folders VS Code is watching. `0` turns it off; values between 1 and 2 are treated as 3. Paused while the window is not focused. Use **XeroHost: Refresh** to check on demand.",
+  "terminal.profile.title": "XeroHost Console"
+}

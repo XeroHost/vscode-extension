@@ -1,8 +1,8 @@
 {
   "name": "xerohost",
-  "displayName": "XeroHost",
-  "description": "Edit your XeroHost game server files and use its console and power controls from VS Code. Edita los archivos de tu servidor XeroHost y usa su consola desde VS Code.",
-  "version": "0.1.0",
+  "displayName": "%displayName%",
+  "description": "%description%",
+  "version": "0.2.0",
   "publisher": "xerohost",
   "license": "MIT",
   "icon": "icon.png",
@@ -35,38 +35,44 @@
     "commands": [
       {
         "command": "xerohost.signIn",
-        "title": "Sign In",
+        "title": "%command.signIn%",
         "category": "XeroHost"
       },
       {
         "command": "xerohost.signOut",
-        "title": "Sign Out",
+        "title": "%command.signOut%",
         "category": "XeroHost"
       },
       {
         "command": "xerohost.openServer",
-        "title": "Open Server Files",
+        "title": "%command.openServer%",
         "category": "XeroHost"
       },
       {
         "command": "xerohost.openConsole",
-        "title": "Open Server Console",
+        "title": "%command.openConsole%",
         "category": "XeroHost"
       },
       {
         "command": "xerohost.powerAction",
-        "title": "Server Power Action",
+        "title": "%command.powerAction%",
         "category": "XeroHost"
       },
       {
         "command": "xerohost.files.compress",
-        "title": "Compress",
+        "title": "%command.compress%",
         "category": "XeroHost"
       },
       {
         "command": "xerohost.files.decompress",
-        "title": "Extract Archive Here",
+        "title": "%command.decompress%",
         "category": "XeroHost"
+      },
+      {
+        "command": "xerohost.refresh",
+        "title": "%command.refresh%",
+        "category": "XeroHost",
+        "icon": "$(refresh)"
       }
     ],
     "menus": {
@@ -78,6 +84,10 @@
         {
           "command": "xerohost.files.decompress",
           "when": "false"
+        },
+        {
+          "command": "xerohost.refresh",
+          "when": "xerohost.hasMountedServer"
         }
       ],
       "explorer/context": [
@@ -90,6 +100,18 @@
           "command": "xerohost.files.decompress",
           "when": "resourceScheme == xerohost && resourceFilename =~ /\\.(zip|tar|tar\\.(gz|xz|bz2)|tgz|rar)$/",
           "group": "xerohost@2"
+        },
+        {
+          "command": "xerohost.refresh",
+          "when": "resourceScheme == xerohost && explorerResourceIsFolder",
+          "group": "xerohost@3"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "xerohost.refresh",
+          "when": "view == workbench.explorer.fileView && xerohost.hasMountedServer",
+          "group": "navigation@50"
         }
       ]
     },
@@ -99,14 +121,21 @@
         "xerohost.console.prompt": {
           "type": "string",
           "default": "container@xerohost~",
-          "description": "Prompt shown in front of console messages and replacing the panel's default prompt."
+          "description": "%config.console.prompt%"
         },
         "xerohost.files.downloadThresholdMiB": {
           "type": "number",
           "default": 4,
           "minimum": 1,
           "maximum": 64,
-          "description": "Files larger than this are opened through a signed download link instead of the panel's file contents endpoint."
+          "description": "%config.files.downloadThresholdMiB%"
+        },
+        "xerohost.files.pollIntervalSeconds": {
+          "type": "number",
+          "default": 10,
+          "minimum": 0,
+          "maximum": 600,
+          "markdownDescription": "%config.files.pollIntervalSeconds%"
         }
       }
     },
@@ -114,7 +143,7 @@
       "profiles": [
         {
           "id": "xerohost.console",
-          "title": "XeroHost Console",
+          "title": "%terminal.profile.title%",
           "icon": "server-environment"
         }
       ]
@@ -124,9 +153,10 @@
     "compile": "node esbuild.mjs",
     "watch": "node esbuild.mjs --watch",
     "typecheck": "tsc --noEmit",
-    "vscode:prepublish": "npm run typecheck && node esbuild.mjs --production",
+    "vscode:prepublish": "npm run typecheck && npm run check:l10n && node esbuild.mjs --production",
     "package": "vsce package --no-dependencies",
-    "test:live": "node test/build.mjs && node test/live.mjs"
+    "test:live": "node test/build.mjs && node test/live.mjs",
+    "check:l10n": "node scripts/check-l10n.mjs"
   },
   "dependencies": {
     "ws": "^8.18.0"
@@ -138,5 +168,6 @@
     "@vscode/vsce": "^3.2.0",
     "esbuild": "^0.25.0",
     "typescript": "^5.6.0"
-  }
+  },
+  "l10n": "./l10n"
 }

@@ -1,3 +1,5 @@
+import * as vscode from 'vscode';
+
 export type OriginCheck = { ok: true; origin: string } | { ok: false; reason: string };
 
 /**
@@ -10,11 +12,11 @@ export function checkOrigin(value: string): OriginCheck {
   try {
     url = new URL(value.trim());
   } catch {
-    return { ok: false, reason: 'Not a valid URL' };
+    return { ok: false, reason: vscode.l10n.t('Not a valid URL') };
   }
 
   if (url.username || url.password) {
-    return { ok: false, reason: 'The URL must not contain credentials' };
+    return { ok: false, reason: vscode.l10n.t('The URL must not contain credentials') };
   }
 
   if (url.protocol === 'https:') {
@@ -26,7 +28,7 @@ export function checkOrigin(value: string): OriginCheck {
     return { ok: true, origin: url.origin };
   }
 
-  return { ok: false, reason: 'Only https:// panels are supported (http:// only for localhost)' };
+  return { ok: false, reason: vscode.l10n.t('Only https:// panels are supported (http:// only for localhost)') };
 }
 
 export function isServerId(value: string): boolean {

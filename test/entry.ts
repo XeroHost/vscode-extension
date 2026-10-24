@@ -5,3 +5,5 @@ export { ConsolePseudoterminal } from '../src/console/pseudoterminal.ts';
 export { serverUri } from '../src/serverUri.ts';
 export { checkOrigin } from '../src/origin.ts';
 export { provisionApiKey } from '../src/auth.ts';
+export { callbackPage, pickLanguage } from '../src/authPage.ts';
+export { stateLabel } from '../src/format.ts';

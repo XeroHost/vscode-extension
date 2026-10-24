@@ -52,7 +52,9 @@ export class XeroHostUriHandler implements vscode.UriHandler {
     if (!checked.ok || !isServerId(serverId)) {
       log.error(`uri handler: rejected link (${checked.ok ? 'bad server id' : checked.reason})`);
       vscode.window.showErrorMessage(
-        `XeroHost: invalid open link${checked.ok ? '' : ` (${checked.reason.toLowerCase()})`}.`,
+        checked.ok
+          ? vscode.l10n.t('XeroHost: invalid open link.')
+          : vscode.l10n.t('XeroHost: invalid open link ({0}).', checked.reason),
       );
       return;
     }
@@ -60,7 +62,9 @@ export class XeroHostUriHandler implements vscode.UriHandler {
     const fileParam = params.get('file');
     const file = fileParam ? normalizeFilePath(fileParam) : null;
     if (fileParam && !file) {
-      vscode.window.showWarningMessage('XeroHost: the link has an invalid file path; opening the server only.');
+      vscode.window.showWarningMessage(
+        vscode.l10n.t('XeroHost: the link has an invalid file path; opening the server only.'),
+      );
     }
 
     log.info(`uri handler: open ${serverId} on ${checked.origin}`);
@@ -76,7 +80,7 @@ export class XeroHostUriHandler implements vscode.UriHandler {
       const found = await client.getServer(serverId);
       server = { origin: client.origin, uuid: found.uuid, name: found.name || shortId(found.uuid) };
     } catch (err) {
-      vscode.window.showErrorMessage(`XeroHost: could not open server ${serverId} (${err}).`);
+      vscode.window.showErrorMessage(vscode.l10n.t('XeroHost: could not open server {0} ({1}).', serverId, String(err)));
       return;
     }
 

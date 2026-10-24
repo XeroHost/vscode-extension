@@ -1,0 +1,16 @@
+{
+  "displayName": "XeroHost",
+  "description": "Edita los archivos de tu servidor XeroHost y usa su consola y sus controles de energía desde VS Code.",
+  "command.signIn": "Iniciar sesión",
+  "command.signOut": "Cerrar sesión",
+  "command.openServer": "Abrir archivos del servidor",
+  "command.openConsole": "Abrir consola del servidor",
+  "command.powerAction": "Acción de energía del servidor",
+  "command.compress": "Comprimir",
+  "command.decompress": "Extraer aquí",
+  "command.refresh": "Actualizar",
+  "config.console.prompt": "Prompt que se muestra delante de los mensajes de la consola y que sustituye al prompt predeterminado del panel.",
+  "config.files.downloadThresholdMiB": "Los archivos más grandes que este tamaño se abren mediante un enlace de descarga firmado en lugar del endpoint de contenido de archivos del panel.",
+  "config.files.pollIntervalSeconds": "Cada cuántos segundos se buscan cambios hechos fuera de VS Code (en el panel, por otras personas o por el propio servidor) en las carpetas que VS Code vigila. `0` lo desactiva; los valores entre 1 y 2 se tratan como 3. Se pausa mientras la ventana no tiene el foco. Usa **XeroHost: Actualizar** para comprobarlo al momento.",
+  "terminal.profile.title": "Consola de XeroHost"
+}

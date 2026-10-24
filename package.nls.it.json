@@ -1,0 +1,16 @@
+{
+  "displayName": "XeroHost",
+  "description": "Modifica i file del tuo server di gioco XeroHost e usa console e controlli di alimentazione da VS Code.",
+  "command.signIn": "Accedi",
+  "command.signOut": "Esci",
+  "command.openServer": "Apri i file del server",
+  "command.openConsole": "Apri la console del server",
+  "command.powerAction": "Azione di alimentazione del server",
+  "command.compress": "Comprimi",
+  "command.decompress": "Estrai qui",
+  "command.refresh": "Aggiorna",
+  "config.console.prompt": "Prompt mostrato davanti ai messaggi della console, al posto di quello predefinito del pannello.",
+  "config.files.downloadThresholdMiB": "I file più grandi di questa soglia vengono aperti tramite un link di download firmato invece dell'endpoint del contenuto dei file del pannello.",
+  "config.files.pollIntervalSeconds": "Ogni quanti secondi cercare modifiche fatte fuori da VS Code (nel pannello, da altre persone o dal server stesso) nelle cartelle osservate da VS Code. `0` disattiva il controllo; i valori da 1 a 2 vengono trattati come 3. In pausa quando la finestra non è in primo piano. Usa **XeroHost: Aggiorna** per controllare subito.",
+  "terminal.profile.title": "Console XeroHost"
+}

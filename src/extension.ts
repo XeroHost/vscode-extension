@@ -3,7 +3,7 @@ import { ConsolePseudoterminal, openConsoleTerminal, trackConsoleTerminals } fro
 import { registerFileActions } from './files/actions.ts';
 import { XeroHostFileSystem } from './fs/fileSystemProvider.ts';
 import { log } from './log.ts';
-import { SCHEME } from './serverUri.ts';
+import { refOf, SCHEME } from './serverUri.ts';
 import {
   type MountedServer,
   mountedServers,
@@ -27,9 +27,17 @@ export function activate(context: vscode.ExtensionContext): void {
     statusBar.pin(server.origin, server.uuid, server.name);
   };
 
+  const updateMountedContext = (): void => {
+    const mounted = (vscode.workspace.workspaceFolders ?? []).some((folder) => folder.uri.scheme === SCHEME);
+    void vscode.commands.executeCommand('setContext', 'xerohost.hasMountedServer', mounted);
+  };
+  updateMountedContext();
+
   context.subscriptions.push(
     log,
     statusBar,
+    fs,
+    vscode.workspace.onDidChangeWorkspaceFolders(updateMountedContext),
     { dispose: () => socketHub.dispose() },
     trackConsoleTerminals(),
 
@@ -42,23 +50,44 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('xerohost.signOut', async () => {
       const origins = await session.origins();
       if (origins.length === 0) {
-        vscode.window.showInformationMessage('XeroHost: not signed in.');
+        vscode.window.showInformationMessage(vscode.l10n.t('XeroHost: not signed in.'));
         return;
       }
 
-      const ALL = 'All panels';
+      const ALL = vscode.l10n.t('All panels');
       const picked =
         origins.length === 1
           ? origins[0]
-          : await vscode.window.showQuickPick([...origins, ALL], { title: 'XeroHost: sign out of which panel?' });
+          : await vscode.window.showQuickPick([...origins, ALL], { title: vscode.l10n.t('XeroHost: sign out of which panel?') });
       if (!picked) {
         return;
       }
 
       await session.signOut(picked === ALL ? undefined : picked);
       vscode.window.showInformationMessage(
-        picked === ALL ? 'XeroHost: signed out of all panels.' : `XeroHost: signed out of ${picked}.`,
+        picked === ALL
+          ? vscode.l10n.t('XeroHost: signed out of all panels.')
+          : vscode.l10n.t('XeroHost: signed out of {0}.', picked),
       );
+    }),
+
+    vscode.commands.registerCommand('xerohost.refresh', async (uri?: vscode.Uri) => {
+      const folders = (vscode.workspace.workspaceFolders ?? []).filter((folder) => folder.uri.scheme === SCHEME);
+      const targets = uri?.scheme === SCHEME ? [refOf(uri)] : folders.map((folder) => refOf(folder.uri));
+      if (targets.length === 0) {
+        vscode.window.showInformationMessage(vscode.l10n.t('XeroHost: no server folder is open.'));
+        return;
+      }
+
+      await vscode.window.withProgress(
+        { location: vscode.ProgressLocation.Window, title: vscode.l10n.t('XeroHost: refreshing...') },
+        async () => {
+          for (const target of targets) {
+            await fs.refresh(target);
+          }
+        },
+      );
+      vscode.window.setStatusBarMessage(vscode.l10n.t('XeroHost: refreshed.'), 3000);
     }),
 
     vscode.commands.registerCommand('xerohost.openServer', async () => {
@@ -83,11 +112,11 @@ export function activate(context: vscode.ExtensionContext): void {
       async provideTerminalProfile() {
         const server = await pickMountedServer(session);
         if (!server) {
-          throw new Error('No server selected.');
+          throw new Error(vscode.l10n.t('No server selected.'));
         }
         statusBar.pin(server.origin, server.uuid, server.name);
         return new vscode.TerminalProfile({
-          name: `Console: ${server.name}`,
+          name: vscode.l10n.t('Console: {0}', server.name),
           pty: new ConsolePseudoterminal(socketHub, server),
           iconPath: new vscode.ThemeIcon('server-environment'),
         });

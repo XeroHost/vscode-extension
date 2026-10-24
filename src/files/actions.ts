@@ -17,14 +17,14 @@ function withProgress<T>(title: string, task: () => Promise<T>): Thenable<T> {
 async function compress(session: Session, fs: XeroHostFileSystem, targets: vscode.Uri[]): Promise<void> {
   const root = dirname(targets[0].path);
   if (targets.some((target) => dirname(target.path) !== root)) {
-    vscode.window.showErrorMessage('XeroHost: select files from a single folder to compress.');
+    vscode.window.showErrorMessage(vscode.l10n.t('XeroHost: select files from a single folder to compress.'));
     return;
   }
 
   const ref = refOf(targets[0]);
   try {
     const client = await session.client(ref.origin);
-    const archive = await withProgress('XeroHost: compressing...', () =>
+    const archive = await withProgress(vscode.l10n.t('XeroHost: compressing...'), () =>
       client.compress(
         ref.server,
         root,
@@ -32,10 +32,10 @@ async function compress(session: Session, fs: XeroHostFileSystem, targets: vscod
       ),
     );
     fs.invalidatePath(ref, root);
-    vscode.window.setStatusBarMessage(`XeroHost: created ${archive}`, 5000);
+    vscode.window.setStatusBarMessage(vscode.l10n.t('XeroHost: created {0}', archive), 5000);
   } catch (err) {
     log.error(`compress ${root} failed: ${err}`);
-    vscode.window.showErrorMessage(`XeroHost: could not create the archive: ${err}`);
+    vscode.window.showErrorMessage(vscode.l10n.t('XeroHost: could not create the archive: {0}', String(err)));
   }
 }
 
@@ -45,13 +45,15 @@ async function decompress(session: Session, fs: XeroHostFileSystem, targets: vsc
     const root = dirname(target.path);
     try {
       const client = await session.client(ref.origin);
-      await withProgress(`XeroHost: extracting ${basename(target.path)}...`, () =>
+      await withProgress(vscode.l10n.t('XeroHost: extracting {0}...', basename(target.path)), () =>
         client.decompress(ref.server, root, basename(target.path)),
       );
       fs.invalidatePath(ref, root);
     } catch (err) {
       log.error(`decompress ${target.path} failed: ${err}`);
-      vscode.window.showErrorMessage(`XeroHost: could not extract ${basename(target.path)}: ${err}`);
+      vscode.window.showErrorMessage(
+        vscode.l10n.t('XeroHost: could not extract {0}: {1}', basename(target.path), String(err)),
+      );
     }
   }
 }

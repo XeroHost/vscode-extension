@@ -44,7 +44,7 @@ export class Session {
 
     const client = await this.promptSignIn(target, true);
     if (!client) {
-      throw new Error('Not signed in to a XeroHost panel.');
+      throw new Error(vscode.l10n.t('Not signed in to a XeroHost panel.'));
     }
     return client;
   }
@@ -58,7 +58,7 @@ export class Session {
     if (origin !== undefined) {
       const checked = checkOrigin(origin);
       if (!checked.ok) {
-        throw new Error(`Refusing panel "${origin}": ${checked.reason}.`);
+        throw new Error(vscode.l10n.t('Refusing panel "{0}": {1}.', origin, checked.reason));
       }
       return checked.origin;
     }
@@ -89,8 +89,8 @@ export class Session {
     const origin =
       presetOrigin ??
       (await vscode.window.showInputBox({
-        title: 'XeroHost: Panel URL',
-        prompt: 'The URL of your XeroHost panel',
+        title: vscode.l10n.t('XeroHost: Panel URL'),
+        prompt: vscode.l10n.t('The URL of your XeroHost panel'),
         value: 'https://',
         ignoreFocusOut: true,
         validateInput: (value) => {
@@ -120,9 +120,9 @@ export class Session {
 
     const promise = (async () => {
       if (confirm) {
-        const SIGN_IN = 'Sign in';
+        const SIGN_IN = vscode.l10n.t('Sign in');
         const choice = await vscode.window.showWarningMessage(
-          `XeroHost wants to sign in to ${checked.origin}. Only continue if you trust this panel.`,
+          vscode.l10n.t('XeroHost wants to sign in to {0}. Only continue if you trust this panel.', checked.origin),
           { modal: true },
           SIGN_IN,
         );
@@ -161,7 +161,7 @@ export class Session {
     this.declinedAt.delete(client.origin);
     this.didChangeEmitter.fire();
 
-    vscode.window.showInformationMessage(`XeroHost: signed in as ${account.username} (${client.origin}).`);
+    vscode.window.showInformationMessage(vscode.l10n.t('XeroHost: signed in as {0} ({1}).', account.username, client.origin));
     return client;
   }
 
@@ -170,9 +170,9 @@ export class Session {
       return await client.getAccount();
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        vscode.window.showErrorMessage('XeroHost: the panel rejected the API key.');
+        vscode.window.showErrorMessage(vscode.l10n.t('XeroHost: the panel rejected the API key.'));
       } else {
-        vscode.window.showErrorMessage(`XeroHost: could not reach the panel (${err}).`);
+        vscode.window.showErrorMessage(vscode.l10n.t('XeroHost: could not reach the panel ({0}).', String(err)));
       }
       return null;
     }
@@ -200,9 +200,9 @@ export class Session {
     const origin = client.origin;
     log.warn(`re-authentication required for ${origin}`);
 
-    const SIGN_IN = 'Sign in again';
+    const SIGN_IN = vscode.l10n.t('Sign in again');
     const choice = await vscode.window.showWarningMessage(
-      `XeroHost: ${origin} rejected your API key (it may have been revoked or expired).`,
+      vscode.l10n.t('XeroHost: {0} rejected your API key (it may have been revoked or expired).', origin),
       SIGN_IN,
     );
     if (choice !== SIGN_IN) {

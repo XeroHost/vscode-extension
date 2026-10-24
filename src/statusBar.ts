@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import type { PowerAction, PowerState, ResourceUsage } from './api/types.ts';
-import { formatBytes } from './format.ts';
+import { formatBytes, stateLabel } from './format.ts';
 import { log } from './log.ts';
 import { decodeAuthority, SCHEME } from './serverUri.ts';
 import { shortId } from './servers.ts';
@@ -30,18 +30,33 @@ function entryKey(origin: string, uuid: string): string {
   return `${origin}|${uuid.toLowerCase()}`;
 }
 
-const POWER_ACTIONS: { action: PowerAction; icon: string; label: string }[] = [
-  { action: 'start', icon: 'play', label: 'Start' },
-  { action: 'restart', icon: 'debug-restart', label: 'Restart' },
-  { action: 'stop', icon: 'debug-stop', label: 'Stop' },
-  { action: 'kill', icon: 'close', label: 'Kill' },
+function powerLabel(action: PowerAction): string {
+  switch (action) {
+    case 'start':
+      return vscode.l10n.t('Start');
+    case 'restart':
+      return vscode.l10n.t('Restart');
+    case 'stop':
+      return vscode.l10n.t('Stop');
+    case 'kill':
+      return vscode.l10n.t('Kill');
+  }
+}
+
+const POWER_ACTIONS: { action: PowerAction; icon: string }[] = [
+  { action: 'start', icon: 'play' },
+  { action: 'restart', icon: 'debug-restart' },
+  { action: 'stop', icon: 'debug-stop' },
+  { action: 'kill', icon: 'close' },
 ];
 
-const POWER_BUTTONS: PowerButton[] = POWER_ACTIONS.map(({ action, icon, label }) => ({
-  action,
-  iconPath: new vscode.ThemeIcon(icon),
-  tooltip: label,
-}));
+function powerButtons(): PowerButton[] {
+  return POWER_ACTIONS.map(({ action, icon }) => ({
+    action,
+    iconPath: new vscode.ThemeIcon(icon),
+    tooltip: powerLabel(action),
+  }));
+}
 
 function stateIcon(state: PowerState | null): string {
   switch (state) {
@@ -226,57 +241,62 @@ export class ServerStatusBar implements vscode.Disposable {
       return;
     }
 
-    this.item.text = `${stateIcon(entry.state)} ${this.displayName(entry)}${entry.state ? ` (${entry.state})` : ''}`;
+    this.item.text = `${stateIcon(entry.state)} ${this.displayName(entry)}${entry.state ? ` (${stateLabel(entry.state)})` : ''}`;
     this.item.tooltip = this.tooltip(entry);
     this.item.show();
   }
 
   private tooltip(entry: ServerEntry): vscode.MarkdownString {
     const md = new vscode.MarkdownString(undefined, true);
-    md.appendMarkdown(`**${this.displayName(entry)}** - ${entry.state ?? 'unknown'}\n\n`);
+    md.appendMarkdown(`**${this.displayName(entry)}** - ${entry.state ? stateLabel(entry.state) : vscode.l10n.t('unknown')}\n\n`);
 
     const stats = entry.stats;
     if (stats) {
       const memLimit = stats.memory_limit_bytes > 0 ? ` / ${formatBytes(stats.memory_limit_bytes)}` : '';
       md.appendMarkdown('|  |  |\n|---|---|\n');
-      md.appendMarkdown(`| $(dashboard) CPU | ${stats.cpu_absolute.toFixed(1)}% |\n`);
-      md.appendMarkdown(`| $(server) Memory | ${formatBytes(stats.memory_bytes)}${memLimit} |\n`);
-      md.appendMarkdown(`| $(database) Disk | ${formatBytes(stats.disk_bytes)} |\n`);
+      md.appendMarkdown(`| $(dashboard) ${vscode.l10n.t('CPU')} | ${stats.cpu_absolute.toFixed(1)}% |\n`);
+      md.appendMarkdown(`| $(server) ${vscode.l10n.t('Memory')} | ${formatBytes(stats.memory_bytes)}${memLimit} |\n`);
+      md.appendMarkdown(`| $(database) ${vscode.l10n.t('Disk')} | ${formatBytes(stats.disk_bytes)} |\n`);
       md.appendMarkdown(
-        `| $(arrow-down)$(arrow-up) Network | ${formatBytes(stats.network.rx_bytes)} / ${formatBytes(stats.network.tx_bytes)} |\n`,
+        `| $(arrow-down)$(arrow-up) ${vscode.l10n.t('Network')} | ${formatBytes(stats.network.rx_bytes)} / ${formatBytes(stats.network.tx_bytes)} |\n`,
       );
-      md.appendMarkdown(`| $(watch) Uptime | ${formatUptime(stats.uptime)} |\n`);
+      md.appendMarkdown(`| $(watch) ${vscode.l10n.t('Uptime')} | ${formatUptime(stats.uptime)} |\n`);
     } else {
-      md.appendMarkdown('_Waiting for live stats..._\n');
+      md.appendMarkdown(`_${vscode.l10n.t('Waiting for live stats...')}_\n`);
     }
 
-    md.appendMarkdown('\n$(list-selection) Click to switch servers or run power actions.');
+    md.appendMarkdown(`\n$(list-selection) ${vscode.l10n.t('Click to switch servers or run power actions.')}`);
     return md;
   }
 
   private statsLine(entry: ServerEntry): string {
     const stats = entry.stats;
     if (!stats) {
-      return 'no live stats yet';
+      return vscode.l10n.t('no live stats yet');
     }
-    return `CPU ${stats.cpu_absolute.toFixed(1)}%  |  Mem ${formatBytes(stats.memory_bytes)}  |  Disk ${formatBytes(stats.disk_bytes)}  |  up ${formatUptime(stats.uptime)}`;
+    return [
+      `${vscode.l10n.t('CPU')} ${stats.cpu_absolute.toFixed(1)}%`,
+      `${vscode.l10n.t('Memory')} ${formatBytes(stats.memory_bytes)}`,
+      `${vscode.l10n.t('Disk')} ${formatBytes(stats.disk_bytes)}`,
+      `${vscode.l10n.t('Uptime')} ${formatUptime(stats.uptime)}`,
+    ].join('  |  ');
   }
 
   private showSwitcher(): void {
     if (this.servers.size === 0) {
-      vscode.window.showInformationMessage('XeroHost: no active server.');
+      vscode.window.showInformationMessage(vscode.l10n.t('XeroHost: no active server.'));
       return;
     }
 
     const focused = this.focusedKey();
     const qp = vscode.window.createQuickPick<ServerPick>();
-    qp.title = 'XeroHost servers';
-    qp.placeholder = 'Select a server to focus - use the buttons for power actions';
+    qp.title = vscode.l10n.t('XeroHost servers');
+    qp.placeholder = vscode.l10n.t('Select a server to focus - use the buttons for power actions');
     qp.items = [...this.servers.values()].map((entry) => ({
       label: `${stateIcon(entry.state)} ${this.displayName(entry)}`,
-      description: entry.state ?? 'unknown',
+      description: entry.state ? stateLabel(entry.state) : vscode.l10n.t('unknown'),
       detail: this.statsLine(entry),
-      buttons: POWER_BUTTONS,
+      buttons: powerButtons(),
       origin: entry.origin,
       uuid: entry.uuid,
       name: this.displayName(entry),
@@ -301,13 +321,13 @@ export class ServerStatusBar implements vscode.Disposable {
     const key = this.focusedKey();
     const entry = key ? this.servers.get(key) : null;
     if (!entry) {
-      vscode.window.showInformationMessage('XeroHost: no active server.');
+      vscode.window.showInformationMessage(vscode.l10n.t('XeroHost: no active server.'));
       return;
     }
 
     const picked = await vscode.window.showQuickPick(
-      POWER_ACTIONS.map(({ action, icon, label }) => ({ label: `$(${icon}) ${label}`, action })),
-      { title: `Power action for ${this.displayName(entry)}` },
+      POWER_ACTIONS.map(({ action, icon }) => ({ label: `$(${icon}) ${powerLabel(action)}`, action })),
+      { title: vscode.l10n.t('Power action for {0}', this.displayName(entry)) },
     );
     if (picked) {
       await this.powerAction(entry.origin, entry.uuid, this.displayName(entry), picked.action);
@@ -316,9 +336,12 @@ export class ServerStatusBar implements vscode.Disposable {
 
   private async powerAction(origin: string, uuid: string, name: string, action: PowerAction): Promise<void> {
     if (action === 'stop' || action === 'kill') {
-      const verb = action === 'kill' ? 'Kill' : 'Stop';
-      const detail = action === 'kill' ? 'The process is terminated at once and data may be lost.' : undefined;
-      const confirmed = await vscode.window.showWarningMessage(`${verb} ${name}?`, { modal: true, detail }, verb);
+      const verb = powerLabel(action);
+      const detail =
+        action === 'kill' ? vscode.l10n.t('The process is terminated at once and data may be lost.') : undefined;
+      const question =
+        action === 'kill' ? vscode.l10n.t('Kill {0}?', name) : vscode.l10n.t('Stop {0}?', name);
+      const confirmed = await vscode.window.showWarningMessage(question, { modal: true, detail }, verb);
       if (confirmed !== verb) {
         return;
       }
@@ -327,9 +350,9 @@ export class ServerStatusBar implements vscode.Disposable {
     try {
       const client = await this.session.client(origin);
       await client.sendPowerAction(uuid, action);
-      vscode.window.setStatusBarMessage(`XeroHost: ${action} sent to ${name}`, 4000);
+      vscode.window.setStatusBarMessage(vscode.l10n.t('XeroHost: "{0}" sent to {1}', powerLabel(action), name), 4000);
     } catch (err) {
-      vscode.window.showErrorMessage(`XeroHost: power action failed (${err}).`);
+      vscode.window.showErrorMessage(vscode.l10n.t('XeroHost: power action failed ({0}).', String(err)));
     }
   }
 
