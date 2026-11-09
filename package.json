@@ -2,7 +2,7 @@
   "name": "xerohost",
   "displayName": "%displayName%",
   "description": "%description%",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "publisher": "xerohost",
   "license": "MIT",
   "icon": "icon.png",

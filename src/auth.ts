@@ -9,11 +9,44 @@ const AUTHORIZE_PATH = '/account/vscode/authorize';
 const CALLBACK_PATH = '/callback';
 const CLIENT_NAME = 'VS Code';
 const CALLBACK_TIMEOUT_MS = 5 * 60_000;
+const TOKEN_PATH = '/integrations/vscode/token';
+const TOKEN_TIMEOUT_MS = 15_000;
 
 type CallbackResult = { key: string } | { error: string } | null;
 
 function randomState(): string {
   return crypto.randomBytes(24).toString('base64url');
+}
+
+/** PKCE pair: the challenge goes to the browser, the verifier never leaves this process. */
+function pkcePair(): { verifier: string; challenge: string } {
+  const verifier = crypto.randomBytes(32).toString('base64url');
+  return { verifier, challenge: crypto.createHash('sha256').update(verifier).digest('base64url') };
+}
+
+/**
+ * Trades the one-time code from the callback for the API key. The panel only
+ * sends a code (never the key) through the browser when it got a challenge, so
+ * the key does not end up in the browser history.
+ */
+async function exchangeCode(origin: string, code: string, verifier: string): Promise<string | null> {
+  try {
+    const response = await fetch(`${origin}${TOKEN_PATH}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ code, code_verifier: verifier }),
+      signal: AbortSignal.timeout(TOKEN_TIMEOUT_MS),
+    });
+    if (!response.ok) {
+      log.warn(`auth: code exchange refused (${response.status})`);
+      return null;
+    }
+    const body = (await response.json()) as { key?: unknown };
+    return typeof body.key === 'string' && body.key ? body.key : null;
+  } catch (err) {
+    log.warn(`auth: code exchange failed: ${err}`);
+    return null;
+  }
 }
 
 function statesMatch(expected: string, received: string | null): boolean {
@@ -30,7 +63,8 @@ function statesMatch(expected: string, received: string | null): boolean {
  * and waits for the panel to hand the key back, or for the user to paste one manually.
  */
 export async function provisionApiKey(origin: string): Promise<string | null> {
-  const callback = await startCallbackServer();
+  const pkce = pkcePair();
+  const callback = await startCallbackServer((code) => exchangeCode(origin, code, pkce.verifier));
 
   try {
     const external = await vscode.env.asExternalUri(vscode.Uri.parse(callback.url));
@@ -38,6 +72,7 @@ export async function provisionApiKey(origin: string): Promise<string | null> {
       `callback_url=${encodeURIComponent(external.toString(true))}`,
       `state=${encodeURIComponent(callback.state)}`,
       `client=${encodeURIComponent(CLIENT_NAME)}`,
+      `code_challenge=${encodeURIComponent(pkce.challenge)}`,
     ].join('&');
     const target = `${origin}${AUTHORIZE_PATH}?${query}`;
 
@@ -92,7 +127,7 @@ async function awaitKey(origin: string, fromCallback: Promise<CallbackResult>): 
   return key ? key : null;
 }
 
-function startCallbackServer(): Promise<{
+function startCallbackServer(exchange: (code: string) => Promise<string | null>): Promise<{
   url: string;
   state: string;
   result: Promise<CallbackResult>;
@@ -133,9 +168,25 @@ function startCallbackServer(): Promise<{
         return;
       }
 
+      const code = requested.searchParams.get('code');
       const key = requested.searchParams.get('key');
       const error = requested.searchParams.get('error');
 
+      if (code) {
+        settled = true;
+        void exchange(code).then((exchanged) => {
+          if (exchanged) {
+            respond(req, res, 200, { tone: 'success', heading: 'signedInHeading', message: 'signedInMessage' });
+            deliver({ key: exchanged });
+          } else {
+            respond(req, res, 400, { tone: 'error', heading: 'invalidHeading', message: 'invalidMessage' });
+            deliver({ error: 'invalid_code' });
+          }
+        });
+        return;
+      }
+
+      // Panels older than the one-time code flow still send the key itself.
       if (key) {
         settled = true;
         respond(req, res, 200, { tone: 'success', heading: 'signedInHeading', message: 'signedInMessage' });

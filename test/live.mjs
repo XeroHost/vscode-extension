@@ -156,6 +156,45 @@ await step('sign-in: loopback callback page is served in the browser language', 
   assert.equal(await result, 'ptlc_lang');
 });
 
+await step('sign-in: one-time code + PKCE, the key never travels in the URL', async () => {
+  const { createServer } = await import('node:http');
+  const { createHash } = await import('node:crypto');
+  let challenge;
+  const seen = [];
+  const panel = createServer((req, res) => {
+    let raw = '';
+    req.on('data', (c) => (raw += c));
+    req.on('end', () => {
+      const body = raw ? JSON.parse(raw) : {};
+      seen.push(req.url);
+      const ok = req.method === 'POST' && req.url === '/integrations/vscode/token' && body.code === 'good-code'
+        && createHash('sha256').update(body.code_verifier ?? '').digest('base64url') === challenge;
+      res.writeHead(ok ? 200 : 400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(ok ? { key: 'ptlc_fromcode' } : { errors: [] }));
+    });
+  });
+  await new Promise((r) => panel.listen(0, '127.0.0.1', r));
+  const panelOrigin = `http://127.0.0.1:${panel.address().port}`;
+  try {
+    let { result, url, callback, state } = await startSignIn(panelOrigin);
+    challenge = url.searchParams.get('code_challenge');
+    assert.match(challenge, /^[A-Za-z0-9_-]{43}$/);
+    const ok = await fetch(`${callback.origin}/callback?state=${state}&code=good-code`);
+    assert.equal(ok.status, 200);
+    assert.equal(await result, 'ptlc_fromcode');
+    assert.ok(!url.href.includes('verifier'), 'the verifier is never sent to the browser');
+
+    ({ result, url, callback, state } = await startSignIn(panelOrigin));
+    challenge = url.searchParams.get('code_challenge');
+    const bad = await fetch(`${callback.origin}/callback?state=${state}&code=stolen-code`);
+    assert.equal(bad.status, 400);
+    assert.equal(await result, null);
+    assert.deepEqual(seen, ['/integrations/vscode/token', '/integrations/vscode/token']);
+  } finally {
+    panel.close();
+  }
+});
+
 await step('sign-in: access_denied from the panel', async () => {
   const { result, callback, state } = await startSignIn('https://panel.example');
   const res = await fetch(`${callback.origin}/callback?state=${state}&error=access_denied`);

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0
+
+### Security
+- **The API key no longer travels in the browser URL.** Sign-in now uses a one-time code with PKCE: the extension sends only a `code_challenge` to the panel, the browser comes back to the loopback callback with a short-lived code (2 minutes, single use), and the extension trades it for the key with `POST /integrations/vscode/token` plus the `code_verifier`, which never leaves VS Code. The key therefore never lands in the browser history. A panel without this flow still sends the key directly and keeps working.
+- Keys created from VS Code now **expire**: the panel's consent screen lets the user pick 7, 30 (default) or 90 days, or no expiration at their own risk. When a key expires the extension already asks to sign in again (401 → "Sign in again").
+
 ## 0.2.1
 - Source published at https://github.com/XeroHost/vscode-extension; repository, homepage and issue links point there.
 
